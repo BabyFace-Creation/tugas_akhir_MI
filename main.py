@@ -11,7 +11,6 @@ import cv2
 import numpy as np
 import imutils
 import argparse
-from persondetection import DetectorAPI
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import datetime
