@@ -80,8 +80,6 @@ if exit1==False:
 
     def argsParser():
         arg_parse = argparse.ArgumentParser()
-        arg_parse.add_argument("-v", "--video", default=None, help="path to Video File ")
-        arg_parse.add_argument("-i", "--image", default=None, help="path to Image File ")
         arg_parse.add_argument("-c", "--camera", default=False, help="Set true if you want to use the camera.")
         arg_parse.add_argument("-o", "--output", type=str, help="path to optional output video file")
         args = vars(arg_parse.parse_args())
@@ -95,18 +93,10 @@ if exit1==False:
         windowc.geometry('1000x700')
 
         max_count3 = 0
-        framex3 = []
-        county3 = []
-        max3 = []
-        avg_acc3_list = []
-        max_avg_acc3_list = []
-        array_person3 = []
         rects = []
         obj_id_list = []
         lpc_counts = 0
         max_acc3 = 0
-        max_avg_acc3 = 0
-        total = 0
 
         def non_max_suppression_fast(boxes, overlapThresh):
             try:
@@ -148,20 +138,13 @@ if exit1==False:
 
         # function defined to open the camera
         def open_cam():
-            global max_count3, framex3, county3, max3, avg_acc3_list, max_avg_acc3_list, array_person3, obj_id_list, lpc_counts, rects, max_acc3, max_avg_acc3, total
+            global max_count3, obj_id_list, lpc_counts, rects, max_acc3
+
             max_count3 = 0
-            framex3 = []
-            county3 = []
-            max3 = []
-            avg_acc3_list = []
-            max_avg_acc3_list = []
-            array_person3 = []
             rects = []
             obj_id_list = []
             lpc_counts = 0
             max_acc3 = 0
-            max_avg_acc3 = 0
-            total = 0
 
             args = argsParser()
 
@@ -178,47 +161,14 @@ if exit1==False:
 
         # function defined to detect from camera
         def detectByCamera(writer):
-            global max_count3, framex3, county3, max3, avg_acc3_list, max_avg_acc3_list, array_person3, obj_id_list, lpc_counts, rects, max_acc3, max_avg_acc3, total
+            global max_count3, obj_id_list, lpc_counts, rects, max_acc3
             max_count3 = 0
-            framex3 = []
-            county3 = []
-            max3 = []
-            avg_acc3_list = []
-            max_avg_acc3_list = []
-            array_person3 = []
             rects = []
             obj_id_list = []
             lpc_counts = 0
             max_acc3 = 0
-            max_avg_acc3 = 0
-            total = 0
 
             # function defined to plot the people count in camera
-            def cam_enumeration_plot():
-                plt.figure(facecolor='orange', )
-                ax = plt.axes()
-                ax.set_facecolor("yellow")
-                plt.plot(framex3, county3, label="Human Count", color="green", marker='o', markerfacecolor='blue')
-                plt.plot(framex3, max3, label="Max. Human Count", linestyle='dashed', color='fuchsia')
-                plt.xlabel('Time (sec)')
-                plt.ylabel('Human Count')
-                plt.legend()
-                plt.title("Enumeration Plot")
-                plt.get_current_fig_manager().canvas.set_window_title("Plot for Camera")
-                plt.show()
-
-            def cam_accuracy_plot():
-                plt.figure(facecolor='orange', )
-                ax = plt.axes()
-                ax.set_facecolor("yellow")
-                plt.plot(framex3, avg_acc3_list, label="Avg. Accuracy", color="green", marker='o', markerfacecolor='blue')
-                plt.plot(framex3, max_avg_acc3_list, label="Max. Avg. Accuracy", linestyle='dashed', color='fuchsia')
-                plt.xlabel('Time (sec)')
-                plt.ylabel('Avg. Accuracy')
-                plt.title('Avg. Accuracy Plot')
-                plt.legend()
-                plt.get_current_fig_manager().canvas.set_window_title("Plot for Camera")
-                plt.show()
 
             def cam_gen_report():
                 pdf = FPDF(orientation='P', unit='mm', format='A4')
@@ -228,13 +178,13 @@ if exit1==False:
                 pdf.image('Images/Crowd_Report-1.png', x=0, y=0, w=210, h=297)
 
                 pdf.text(132, 155, str(max_count3))
-                pdf.text(107, 168, str(objectId+1))
+                pdf.text(107, 168, str(len(obj_id_list)))
 
 
                 pdf.output('Crowd_Report.pdf')
                 mbox.showinfo("Status", "Report Generated and Saved Successfully.", parent = windowc)
 
-            cap = cv2.VideoCapture(1)
+            cap = cv2.VideoCapture(0)
 
             fps_start_time = datetime.datetime.now()
             fps = 0
@@ -314,8 +264,6 @@ if exit1==False:
             # info2.config(text="Max. Human Count : " + str(max_count3))
             cv2.destroyAllWindows()
 
-            #Button(windowc, text="Enumeration\nPlot", command=cam_enumeration_plot, cursor="hand2", font=("Arial", 20),bg="orange", fg="blue").place(x=100, y=530)
-            #Button(windowc, text="Avg. Accuracy\nPlot", command=cam_accuracy_plot, cursor="hand2", font=("Arial", 20),bg="orange", fg="blue").place(x=700, y=530)
             Button(windowc, text="Generate Report", command=cam_gen_report, cursor="hand2", font=("Arial", 20),bg="gray", fg="blue").place(x=325, y=550)
 
         lbl1 = tk.Label(windowc, text="DETECT  FROM\nCAMERA", font=("Arial", 50, "underline"), fg="brown")  # same way bg
