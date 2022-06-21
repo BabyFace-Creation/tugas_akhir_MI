@@ -14,6 +14,7 @@ import argparse
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import datetime
+import math
 
 protopath = "MobileNetSSD_deploy.prototxt"
 modelpath = "MobileNetSSD_deploy.caffemodel"
@@ -95,8 +96,17 @@ if exit1==False:
         max_count3 = 0
         rects = []
         obj_id_list = []
+        sys_start = ""
+        sys_stop = ""
+        pagi = 0
+        siang = 0
+        sore = 0
+        malam = 0
         lpc_counts = 0
-        max_acc3 = 0
+        
+        def round_up(n, decimals=0):
+            multiplier = 10 ** decimals
+            return math.ceil(n * multiplier) / multiplier
 
         def non_max_suppression_fast(boxes, overlapThresh):
             try:
@@ -138,13 +148,20 @@ if exit1==False:
 
         # function defined to open the camera
         def open_cam():
-            global max_count3, obj_id_list, lpc_counts, rects, max_acc3
+            global max_count3, obj_id_list, sys_start, sys_stop, pagi, siang, sore, malam, lpc_counts, spc_counts, rects
 
             max_count3 = 0
             rects = []
             obj_id_list = []
+            sys_start = ""
+            sys_stop = ""
+            pagi = 0
+            siang = 0
+            sore = 0
+            malam = 0
             lpc_counts = 0
-            max_acc3 = 0
+            spc_counts = 0
+            
 
             args = argsParser()
 
@@ -161,12 +178,20 @@ if exit1==False:
 
         # function defined to detect from camera
         def detectByCamera(writer):
-            global max_count3, obj_id_list, lpc_counts, rects, max_acc3
+            global max_count3, obj_id_list, sys_start, sys_stop, pagi, siang, sore, malam, lpc_counts, spc_counts, rects
+
             max_count3 = 0
             rects = []
             obj_id_list = []
+            sys_start = ""
+            sys_stop = ""
+            pagi = 0
+            siang = 0
+            sore = 0
+            malam = 0
             lpc_counts = 0
-            max_acc3 = 0
+            spc_counts = 0
+            
 
             # function defined to plot the people count in camera
 
@@ -176,15 +201,33 @@ if exit1==False:
                 pdf.set_font("Arial", "", 20)
                 pdf.set_text_color(128, 0, 0)
                 pdf.image('Images/Crowd_Report-1.png', x=0, y=0, w=210, h=297)
+                now = datetime.datetime.now().date()
 
-                pdf.text(132, 155, str(max_count3))
-                pdf.text(107, 168, str(len(obj_id_list)))
+                dateCreated =str(now) +" From : "+str(sys_start.hour)+":"+str(sys_start.minute)+" - "+str(sys_stop.hour)+":"+str(sys_stop.minute)
+
+                
+                if (sys_start.minute<10 and sys_stop.minute<10):
+                    dateCreated =str(now) +" From : "+str(sys_start.hour)+":0"+str(sys_start.minute)+" - "+str(sys_stop.hour)+":0"+str(sys_stop.minute)
+                elif(sys_start.minute<10 and sys_stop.minute>10):
+                    dateCreated =str(now) +" From : "+str(sys_start.hour)+":0"+str(sys_start.minute)+" - "+str(sys_stop.hour)+":"+str(sys_stop.minute)
+                elif(sys_start.minute>10 and sys_stop.minute<10):
+                    dateCreated =str(now) +" From : "+str(sys_start.hour)+":"+str(sys_start.minute)+" - "+str(sys_stop.hour)+":"+str(sys_stop.minute)
+                
+
+                pdf.text(120, 155, str(max_count3))
+                pdf.text(95, 168, str(len(obj_id_list)))
+                pdf.text(78, 181, dateCreated)
+                pdf.text(109, 206, str(pagi))
+                pdf.text(109, 218, str(siang))
+                pdf.text(109, 230, str(sore))
+                pdf.text(109, 242, str(malam))
 
 
-                pdf.output('Crowd_Report.pdf')
+                pdf.output('Crowd_Report_'+str(now)+'.pdf')
                 mbox.showinfo("Status", "Report Generated and Saved Successfully.", parent = windowc)
 
-            cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture(1)
+            sys_start = datetime.datetime.now()
 
             fps_start_time = datetime.datetime.now()
             fps = 0
@@ -232,6 +275,24 @@ if exit1==False:
 
                     if objectId not in obj_id_list:
                         obj_id_list.append(objectId)
+                        time_in = datetime.datetime.now()
+                        print(time_in.hour)
+                        if (time_in.hour >= 7 and time_in.hour <=9):
+                            print("Pagi")
+                            pagi = pagi + 1
+                            print (str(pagi))
+                        elif(time_in.hour >= 10 and time_in.hour <=14):
+                            print("Siang")
+                            siang = siang + 1
+                            print (str(siang))
+                        elif(time_in.hour >= 15 and time_in.hour <=17):
+                            print("Sore")
+                            sore = sore + 1
+                            print (str(sore))
+                        elif(time_in.hour >= 18 and time_in.hour <=21):
+                            print("Malam")
+                            malam = malam + 1
+                            print (str(malam))
 
                 fps_end_time = datetime.datetime.now()
                 time_diff = fps_end_time - fps_start_time
@@ -245,16 +306,24 @@ if exit1==False:
                 cv2.putText(frame, fps_text, (5, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 1)
 
                 lpc_counts = len(objects)
+                spc_counts = int(round_up(lpc_counts/2))
+
 
                 if (lpc_counts > max_count3):
                     max_count3 = lpc_counts
 
                 lpc_txt = "Person : {}".format(lpc_counts)
+                spc_txt = "Staff Needed : {}".format(spc_counts)
                 cv2.putText(frame, lpc_txt, (5, 60), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 1)
+                cv2.putText(frame, spc_txt, (580, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 1)
 
                 cv2.imshow("Human Detection from Camera", frame)
                 key = cv2.waitKey(1)
                 if key & 0xFF == ord('q'):
+                    sys_stop = datetime.datetime.now()
+                    print (str(sys_start))
+                    print (str(sys_stop))
+                    cam_gen_report()
                     break
 
             cap.release()
