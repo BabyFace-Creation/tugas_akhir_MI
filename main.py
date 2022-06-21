@@ -10,7 +10,6 @@ import cv2
 import numpy as np
 import imutils
 import argparse
-import matplotlib.pyplot as plt
 from fpdf import FPDF
 import datetime
 import math
