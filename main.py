@@ -1,7 +1,6 @@
 # Real Time Human Detection, Counting, And Tracking
 
 # imported necessary library
-from functools import total_ordering
 from tkinter import *
 from centroidtracker import CentroidTracker
 import tkinter as tk
